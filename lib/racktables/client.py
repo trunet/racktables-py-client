@@ -433,7 +433,14 @@ class RacktablesClient:
         return self.make_request('update_object_tags', {'object_id': object_id,
                                                         'taglist[]': tag_ids})
 
-            
+    
+    def get_ipaddress(self, ipaddress):
+        "Returns a dictionary containing data for a single IP address."
+
+        return self.make_request('get_ipaddress', {'ip': ipaddress})
+
+        return self.make_request('get_ipv4space')
+        
     def get_ipv4space(self):
         "Returns a dictionary containing top-level network data."
 
