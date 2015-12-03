@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import re
-import urllib
-import json
+import urllib        
+import requests
 import logging
-import pprint
+import sys
 
 module_logger = logging.getLogger('racktables_client')
 
@@ -503,20 +503,12 @@ class RacktablesClient:
 
 
     def make_request(self, method, args=None, response_only=True):
+        args['method'] = method
 
-        # method first
-        request_uri = self.api + "?method=" + method
-        safe_request_uri = self.no_password_api + "?method=" + method
-
-        # add any additional parameters
-        if args is not None:
-            params = urllib.urlencode(args, doseq=True)
-            request_uri = request_uri + '&' + params
-            safe_request_uri = safe_request_uri + '&' + params
-
-        self.logger.debug('requesting: ' + safe_request_uri)
-        http_body = urllib.urlopen(request_uri).read()
-        decoded = json.loads(http_body)
+        self.logger.debug('requesting: %s?%s' % (self.no_password_api, urllib.urlencode(args)))
+        requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
+        http_body = requests.get(self.api, params=args, verify=False)
+        decoded = http_body.json()
 
         # TODO: some error handling here
         if response_only:
