@@ -502,7 +502,7 @@ class RacktablesClient:
         return chapter
 
 
-    def make_request(self, method, args=None, response_only=True):
+    def make_request(self, method, args={}, response_only=True):
         args['method'] = method
 
         self.logger.debug('requesting: %s?%s' % (self.no_password_api, urllib.urlencode(args)))
