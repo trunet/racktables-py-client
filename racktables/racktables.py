@@ -506,6 +506,7 @@ class RacktablesClient:
         args['method'] = method
 
         self.logger.debug('requesting: %s?%s' % (self.no_password_api, urllib.urlencode(args)))
+        logging.captureWarnings(True)
         requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
         http_body = requests.get(self.api, params=args, verify=False)
         decoded = http_body.json()
