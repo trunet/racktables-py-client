@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import re
-import urllib        
+import urllib
 import requests
 import logging
 import sys
