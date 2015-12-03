@@ -56,7 +56,9 @@ class RacktablesClient:
         #       is set, the paramter name must include braces: cfe[])
         #       format for specifying attributes is: cfe={$attr_<ATTR_ID>_<ATTR_VALUE>}
 
-        if args:
+        if args and 'cft[]' in args and len(args['cft[]']) > 1:
+            args['andor'] = 'or'
+        elif args:
             args['andor'] = 'and'
 
         objects = {}
