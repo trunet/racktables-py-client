@@ -8,14 +8,17 @@ import urllib3
 import logging
 import sys
 
-module_logger = logging.getLogger('racktables_client')
+logger_basename = 'racktables_client'
+logger = logging.getLogger(logger_basename)
+#logger.addHandler(logging.NullHandler())
+logger.addHandler(logging.StreamHandler())
+logger.setLevel(logging.DEBUG)
 
 class RacktablesClient:
 
     def __init__(self, api, username=None, password=None):
 
-        self.logger = logging.getLogger('racktables_client')
-
+        self.logger = logging.getLogger('{base}.{suffix}'.format(base=logger_basename, suffix=self.__class__.__name__))
         self.logger.debug('using API base URI of %s', api)
 
         # keep a version of the API that's safe to print and record

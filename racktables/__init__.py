@@ -2,6 +2,6 @@
 
 __author__ = 'Wagner Sartori Junior'
 __email__ = 'wsartori@comscore.com'
-__version__ = '0.0.4'
+__version__ = '0.0.6'
 
 from racktables import *
