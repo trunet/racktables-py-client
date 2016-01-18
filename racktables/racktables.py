@@ -8,25 +8,27 @@ import urllib3
 import logging
 import sys
 
-logger_basename = 'racktables_client'
-logger = logging.getLogger(logger_basename)
-#logger.addHandler(logging.NullHandler())
-logger.addHandler(logging.StreamHandler())
-logger.setLevel(logging.DEBUG)
+try:  # Python 2.7+
+    from logging import NullHandler
+except ImportError:
+    class NullHandler(logging.Handler):
+        def emit(self, record):
+            pass
+
+logging.getLogger(__name__).addHandler(NullHandler())
 
 class RacktablesClient:
 
     def __init__(self, api, username=None, password=None):
 
-        self.logger = logging.getLogger('{base}.{suffix}'.format(base=logger_basename, suffix=self.__class__.__name__))
-        self.logger.debug('using API base URI of %s', api)
+        logging.debug('using API base URI of %s', api)
 
         # keep a version of the API that's safe to print and record
         no_password_api = api
 
         # inject username and password if given
         if username is not None and password is not None:
-            self.logger.debug('adding username and password to API URL')
+            logging.debug('adding username and password to API URL')
             m = re.search('^(https?://)(.*)$', api)
             api             = m.group(1) + username + ':' + password + '@' + m.group(2)
             no_password_api = m.group(1) + username + ':*PASSWORD*@'       + m.group(2)
@@ -115,11 +117,11 @@ class RacktablesClient:
         new_rt_object    = self.make_request('add_object', args)
         new_rt_object_id = new_rt_object['id']
 
-        self.logger.info('created new object, id: %s', new_rt_object_id)
+        logging.info('created new object, id: %s', new_rt_object_id)
 
         # add any attrs or comment
         if comment or attrs:
-            self.logger.info('adding comment/attributes for new object id %s', new_rt_object_id)
+            logging.info('adding comment/attributes for new object id %s', new_rt_object_id)
             self.edit_object(object_id       = new_rt_object_id,
                              object_name     = object_name,
                              object_asset_no = object_asset_no,
@@ -130,7 +132,7 @@ class RacktablesClient:
 
         # add tags if specified
         if taglist:
-            self.logger.info('adding tags for new object id %s', new_rt_object_id)
+            logging.info('adding tags for new object id %s', new_rt_object_id)
             self.update_object_tags(taglist)
 
         return new_rt_object
@@ -201,7 +203,7 @@ class RacktablesClient:
         ip_addresses = map(lambda address: address['addrinfo']['ip'], updated_object['ipv4'].values())
 
         if ip_address in ip_addresses:
-            self.logger.info('updated object id %s interface %s to IP address %s',
+            logging.info('updated object id %s interface %s to IP address %s',
                         object_id, os_interface, ip_address)
             success = True
 
@@ -220,7 +222,7 @@ class RacktablesClient:
         remaining_ips = map(lambda address: address['addrinfo']['ip'], updated_object['ipv4'].values())
 
         if ip_address not in remaining_ips:
-            self.logger.info('removed IP address %s from object id %s',
+            logging.info('removed IP address %s from object id %s',
                              ip_address, object_id)
             success = True
 
@@ -241,7 +243,7 @@ class RacktablesClient:
 
         if 'port_id' in response['metadata']:
             new_port_id = response['metadata']['port_id']
-            self.logger.info('added new port %s (id: %s) for object id %s, MAC address %s',
+            logging.info('added new port %s (id: %s) for object id %s, MAC address %s',
                              name, new_port_id, object_id, mac_address)
 
         return new_port_id
@@ -259,7 +261,7 @@ class RacktablesClient:
         remaining_ports = map(lambda port: port['id'], updated_object['ports'].values())
 
         if port_id not in remaining_ports:
-            self.logger.info('removed port id %s from object id %s',
+            logging.info('removed port id %s from object id %s',
                              port_id, object_id)
             success = True
 
@@ -277,7 +279,7 @@ class RacktablesClient:
                                                    'cable':       cable_id}, False)
 
         if 'local_port' in response['metadata']:
-            self.logger.info('linked port %s (object id %s) to remote port %s (object id %s)',
+            logging.info('linked port %s (object id %s) to remote port %s (object id %s)',
                              response['metadata']['local_port'],  response['metadata']['local_object'],
                              response['metadata']['remote_port'], response['metadata']['remote_object'])
             success = True
@@ -294,7 +296,7 @@ class RacktablesClient:
         response = self.make_request('unlink_port', {'port_id': port_id}, False)
 
         if 'port_id' in response['metadata']:
-            self.logger.info('unlinked port %s successfully', response['metadata']['port_id'])
+            logging.info('unlinked port %s successfully', response['metadata']['port_id'])
             success = True
 
         return success
@@ -366,7 +368,7 @@ class RacktablesClient:
     def link_entities(self, child_id, parent_id, child_type='object', parent_type='object'):
         "Links two entities, such as Hypervisor -> VM or Server chassis -> server."
 
-        self.logger.debug('linking object id %s (%s, child) to object id %s (%s, parent)',
+        logging.debug('linking object id %s (%s, child) to object id %s (%s, parent)',
                           child_id, child_type, parent_id, parent_type)
 
         return self.make_request('link_entities', {'child_entity_type':  child_type,
@@ -381,22 +383,22 @@ class RacktablesClient:
         tags = {}
 
         if as_tree:
-            self.logger.debug('getting tags as a tree (never cached)')
+            logging.debug('getting tags as a tree (never cached)')
             tags = self.make_request('get_tagtree')
 
         else:
-            self.logger.debug('getting tags as a list')
+            logging.debug('getting tags as a list')
 
             if self.tags_list_cache is None:
-                self.logger.debug('initializing tag list cache')
+                logging.debug('initializing tag list cache')
                 self.tags_list_cache = self.make_request('get_taglist')
 
             elif not use_cache:
-                self.logger.debug('refreshing tag list cache by request')
+                logging.debug('refreshing tag list cache by request')
                 self.tags_list_cache = self.make_request('get_taglist')
 
             else:
-                self.logger.debug('using previously cached version of tag list')
+                logging.debug('using previously cached version of tag list')
 
             tags = self.tags_list_cache
 
@@ -412,13 +414,13 @@ class RacktablesClient:
         site_tags = self.get_tags()
 
         for tag_name in tag_names:
-            self.logger.debug('determining tag id for tag "%s"', tag_name)
+            logging.debug('determining tag id for tag "%s"', tag_name)
 
             found = False
             for tagdata in site_tags.values():
                 if tagdata['tag'] == tag_name:
                     tag_id = int(tagdata['id'])
-                    self.logger.debug('tag "%s" has id %s', tag_name, tag_id)
+                    logging.debug('tag "%s" has id %s', tag_name, tag_id)
                     tag_ids.append(tag_id)
                     found = True
                     break
@@ -434,7 +436,7 @@ class RacktablesClient:
 
         tag_ids = self.get_tag_ids(new_tags)
 
-        self.logger.debug('applying the following tags ids to object id %s: %s', object_id, str(tag_ids))
+        logging.debug('applying the following tags ids to object id %s: %s', object_id, str(tag_ids))
 
         return self.make_request('update_object_tags', {'object_id': object_id,
                                                         'taglist[]': tag_ids})
@@ -490,18 +492,18 @@ class RacktablesClient:
 
         # not in the cache, get and store it
         if chapter_cache_key not in self.chapter_cache:
-            self.logger.debug('fetching and cacheing chapter %s from API', chapter_id)
+            logging.debug('fetching and cacheing chapter %s from API', chapter_id)
             chapter = self.make_request('get_chapter', args)
             self.chapter_cache[chapter_cache_key] = chapter
 
         # in cache and we can use it
         elif use_cache:
-            self.logger.debug('using cached data for chapter %s', chapter_id)
+            logging.debug('using cached data for chapter %s', chapter_id)
             chapter = self.chapter_cache[chapter_cache_key]
 
         # in cache, but we want a fresh version. replace the cached version as well
         else:
-            self.logger.debug('replacing cached data for chapter %s', chapter_id)
+            logging.debug('replacing cached data for chapter %s', chapter_id)
             chapter = self.make_request('get_chapter', args)
             self.chapter_cache[chapter_cache_key] = chapter
 
@@ -511,7 +513,7 @@ class RacktablesClient:
     def make_request(self, method, args={}, response_only=True):
         args['method'] = method
 
-        self.logger.debug('requesting: %s?%s' % (self.no_password_api, urllib.urlencode(args)))
+        logging.debug('requesting: %s?%s' % (self.no_password_api, urllib.urlencode(args)))
         urllib3.disable_warnings()
         requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
         http_body = requests.get(self.api, params=args, verify=False)
