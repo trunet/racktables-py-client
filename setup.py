@@ -15,7 +15,7 @@ test_requirements = [
 
 setup(
     name='racktables',
-    version='0.0.8',
+    version='0.0.9',
     description='Racktables API python wrapper',
     long_description=readme,
     author='Wagner Sartori Junior',
