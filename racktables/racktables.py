@@ -43,14 +43,13 @@ class RacktablesClient:
     def search_objects(self, term):
         "Returns a list of objects that matches the term"
         objects_list = self.make_request('search', {'term': term})
-        "{u'object': {u'7119': {u'by_attr': {u'1': u'asset_no', u'0': u'name'}, u'by_sticker': {u'0': u'1'}, u'id': u'7119'}}}"
         objects = {}
         if 'object' in objects_list.keys():
             for object_id in objects_list['object'].keys():
-                objects[object_id] = self.get_object(object_id)
+                objects.update({object_id: self.get_object(object_id)})
         return objects
 
-    def get_objects(self, alt_key=None, include_attrs=False, type_filter=None, tag_filter=[]):
+    def get_objects(self, alt_key=None, include_attrs=False, type_filter=None, attr_filter=None, tag_filter=[]):
         "Returns a dictionary of all the objects in Racktables."
 
         args = {}
@@ -66,6 +65,9 @@ class RacktablesClient:
 
         if type_filter:
             args['cfe'] = '{{$typeid_{0}}}'.format(int(type_filter))
+
+        if attr_filter:
+            args['cfe'] = attr_filter
 
         # TODO: attributes, which also uses cfe (and if both are set, or more than one attr
         #       is set, the paramter name must include braces: cfe[])
