@@ -40,6 +40,16 @@ class RacktablesClient:
         self.tags_list_cache = None
 
 
+    def search_objects(self, term):
+        "Returns a list of objects that matches the term"
+        objects_list = self.make_request('search', {'term': term})
+        "{u'object': {u'7119': {u'by_attr': {u'1': u'asset_no', u'0': u'name'}, u'by_sticker': {u'0': u'1'}, u'id': u'7119'}}}"
+        objects = {}
+        if 'object' in objects_list.keys():
+            for object_id in objects_list['object'].keys():
+                objects[object_id] = self.get_object(object_id)
+        return objects
+
     def get_objects(self, alt_key=None, include_attrs=False, type_filter=None, tag_filter=[]):
         "Returns a dictionary of all the objects in Racktables."
 
