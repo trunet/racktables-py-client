@@ -3,11 +3,11 @@
 
 from setuptools import setup
 
-readme = open('README.md').read()
+#readme = open('README.md').read()
 
 # get the requirements from the requirements.txt
-requirements_file = open('requirements.txt').read().split()
-requirements = requirements_file
+#requirements_file = open('requirements.txt').read().split()
+#requirements = requirements_file
 
 test_requirements = [
     # TODO: put package test requirements here
@@ -15,9 +15,8 @@ test_requirements = [
 
 setup(
     name='racktables',
-    version='0.0.9',
+    version='0.0.10',
     description='Racktables API python wrapper',
-    long_description=readme,
     author='Wagner Sartori Junior',
     author_email='wsartori@comscore.com',
     url='https://github.com/trunet/racktables-py-client',
@@ -27,7 +26,7 @@ setup(
     package_dir={'racktables':
                  'racktables'},
     include_package_data=True,
-    install_requires=requirements,
+    install_requires=['requests[security]', 'wheel'],
     license="In-house",
     zip_safe=False,
     keywords='racktables',
