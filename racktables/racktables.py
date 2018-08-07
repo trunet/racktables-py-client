@@ -202,7 +202,7 @@ class RacktablesClient:
         return success
 
 
-    def add_object_ipv4_address(self, object_id, ip_address, os_interface):
+    def add_object_ipv4_address(self, object_id, ip_address, os_interface, bond_type='regular'):
         "Add an IPv4 address to an object."
 
         success = False
@@ -210,13 +210,14 @@ class RacktablesClient:
         # response is the get_object page
         updated_object = self.make_request('add_object_ip_allocation', {'object_id': object_id,
                                                                        'ip':        ip_address,
-                                                                       'bond_name': os_interface})
+                                                                       'bond_name': os_interface,
+                                                                       'bond_type': bond_type})
 
         ip_addresses = map(lambda address: address['addrinfo']['ip'], updated_object['ipv4'].values())
 
         if ip_address in ip_addresses:
-            logging.info('updated object id %s interface %s to IP address %s',
-                        object_id, os_interface, ip_address)
+            logging.info('updated object id %s interface %s (%s) to IP address %s',
+                        object_id, os_interface, bond_type, ip_address)
             success = True
 
         return success
