@@ -2,7 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import re
-import urllib
+try:
+    from urllib import urlencode  # Python 2.X
+except ImportError:
+    from urllib.parse import urlencode
 import requests
 import urllib3
 import logging
@@ -528,7 +531,7 @@ class RacktablesClient:
     def make_request(self, method, args={}, response_only=True):
         args['method'] = method
 
-        logging.debug('requesting: %s?%s' % (self.no_password_api, urllib.urlencode(args)))
+        logging.debug('requesting: %s?%s' % (self.no_password_api, urlencode(args)))
         urllib3.disable_warnings()
         requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
         http_body = requests.get(self.api, params=args, verify=False)
@@ -669,34 +672,34 @@ if __name__ == "__main__":
 
     if args.get_depot:
         all_objects = rt_client.get_objects()
-        print 'there are %s objects in racktables' % len(all_objects)
+        print('there are %s objects in racktables' % len(all_objects))
 
     if args.get_object_id:
-        print 'getting object ID ' + args.get_object_id
+        print('getting object ID ' + args.get_object_id)
         rt_object = rt_client.get_object(args.get_object_id, True, True)
         rt_object_allocation = rt_client.get_object_allocation(args.get_object_id)
-        print "name: {0}\nFQDN: {1}\nHW type: {2}".format(rt_object['name'],
+        print("name: {0}\nFQDN: {1}\nHW type: {2}".format(rt_object['name'],
                                                           rt_object['attrs']['FQDN']['a_value'],
-                                                          rt_object['attrs']['HW type']['a_value'])
+                                                          rt_object['attrs']['HW type']['a_value']))
 
-        print 'tags:'
+        print('tags:')
         for tagdata in rt_object['etags'].values():
-            print ' {0} (explicit)'.format(tagdata['tag'])
+            print(' {0} (explicit)'.format(tagdata['tag']))
 
         for tagdata in rt_object['itags'].values():
-            print ' {0} (implicit)'.format(tagdata['tag'])
+            print(' {0} (implicit)'.format(tagdata['tag']))
 
-        print 'allocation:'
+        print('allocation:')
         for rack_id, rack_data in rt_object_allocation['racks'].items():
-            print ' rack id {0}:'.format(rack_id)
+            print(' rack id {0}:'.format(rack_id))
             for position, idxes in rt_object_allocation['racks'][rack_id].items():
-                print '   pos: {0}'.format(position)
+                print('   pos: {0}'.format(position))
                 for idx in idxes.keys():
-                    print '    idx: {0}'.format(idx)
+                    print('    idx: {0}'.format(idx))
 
-        print 'zero-U allocation:'
+        print('zero-U allocation:')
         for rack_id in rt_object_allocation['zerou_racks']:
-            print ' rack id {0}'.format(rack_id)
+            print(' rack id {0}'.format(rack_id))
 
 
     if args.get_tags:
@@ -705,14 +708,14 @@ if __name__ == "__main__":
         def dump_tag_tree(tree, indent=0):
             for node in tree.values():
                 text = '{0} (id {1})'.format(node['tag'], node['id'])
-                print text.rjust(len(text) + indent)
+                print(text.rjust(len(text) + indent))
                 dump_tag_tree(node['kids'], indent + 2)
 
-        print "\nuser-defined tags:"
-        print   '=================='
+        print("\nuser-defined tags:")
+        print('==================')
 
         tags = rt_client.get_tags(True)
         dump_tag_tree(tags, 2)
 
-        print "==================\n"
+        print ("==================\n")
 
