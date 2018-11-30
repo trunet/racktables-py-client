@@ -342,6 +342,8 @@ class RacktablesClient:
                     idxes = {}
 
                     for idx, atom_data in value.items():
+                        if 'object_id' in atom_data and not atom_data['object_id']:
+                            continue
                         if 'object_id' in atom_data and int(atom_data['object_id']) == int(object_id):
                             idxes[int(idx)] = atom_data['state']
 
